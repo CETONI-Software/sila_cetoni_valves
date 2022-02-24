@@ -39,6 +39,8 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
         logging.debug(f"Requested valve: {valve_index}")
 
         try:
+            if valve_index < 0:
+                raise IndexError
             return self.__valves[valve_index]
         except IndexError:
             raise InvalidValveIndex(
