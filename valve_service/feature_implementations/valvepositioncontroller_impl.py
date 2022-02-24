@@ -81,7 +81,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
                     new_position = valve.actual_valve_position()
                 if new_position != position:
                     position = new_position
-                    self.update_Position(position, queue=self.__position_queues[i])
+                    self.update_Position(position, queue=None if i is None else self.__position_queues[i])
                 time.sleep(0.1)
 
         return update_position
