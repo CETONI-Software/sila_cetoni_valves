@@ -13,7 +13,8 @@ from sila2.framework import Command, FullyQualifiedIdentifier, Property
 from sila2.framework.errors.undefined_execution_error import UndefinedExecutionError
 from sila2.framework.errors.validation_error import ValidationError
 
-from ....application.system import ApplicationSystem
+from sila_cetoni.application.system import ApplicationSystem
+
 from ..generated.valvegatewayservice import InvalidValveIndex
 from ..generated.valvepositioncontroller import (
     SwitchToPosition_Responses,
