@@ -11,6 +11,8 @@ from sila2.framework.errors.framework_error import FrameworkError, FrameworkErro
 from ..generated.valvegatewayservice import InvalidValveIndex, ValveGatewayServiceBase, ValveGatewayServiceFeature
 from ..generated.valvepositioncontroller import ValvePositionControllerFeature
 
+logger = logging.getLogger(__name__)
+
 
 class ValveGatewayServiceImpl(ValveGatewayServiceBase):
     __valves: List[Valve]
@@ -36,7 +38,7 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
         """
 
         valve_index: int = metadata.pop(self.__valve_index_identifier)
-        logging.debug(f"Requested valve: {valve_index}")
+        logger.debug(f"Requested valve: {valve_index}")
 
         try:
             if valve_index < 0:

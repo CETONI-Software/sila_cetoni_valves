@@ -26,6 +26,8 @@ from ..generated.valvepositioncontroller import (
 )
 from .valvegatewayservice_impl import ValveGatewayServiceImpl
 
+logger = logging.getLogger(__name__)
+
 
 class SystemNotOperationalError(UndefinedExecutionError):
     def __init__(self, command_or_property: Union[Command, Property]):
@@ -58,7 +60,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
             try:
                 self.update_Position(self.__valve.actual_valve_position())
             except DeviceError as err:
-                logging.error(err)
+                logger.error(err)
 
             executor.submit(self.__make_position_updater(), self.__stop_event)
         else:
