@@ -3,7 +3,8 @@ from uuid import UUID
 
 from qmixsdk.qmixvalve import Valve
 
-from ...core.core_service.server import Server as CoreServer
+from sila_cetoni.core.sila.core_service.server import Server as CoreServer
+
 from .feature_implementations.valvegatewayservice_impl import ValveGatewayServiceImpl
 from .feature_implementations.valvepositioncontroller_impl import ValvePositionControllerImpl
 from .generated.valvegatewayservice import ValveGatewayServiceFeature
