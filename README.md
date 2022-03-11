@@ -7,5 +7,5 @@ Run `python -m sila_cetoni_valves --help` to receive a full list of available op
 
 ## Code generation
 ```console
-$ python -m sila2.code_generator new-package -n valve_service -o ./sila_cetoni_valves/sila ../../features/de/cetoni/valves/*.sila.xml
+$ python -m sila2.code_generator new-package -n valve_service -o ./sila_cetoni/valves/sila ./sila_cetoni/valves/features*.sila.xml
 ```
