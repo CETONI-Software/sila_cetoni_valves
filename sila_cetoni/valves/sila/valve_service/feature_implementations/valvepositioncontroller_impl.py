@@ -12,6 +12,7 @@ from qmixsdk.qmixvalve import Valve
 from sila2.framework import Command, FullyQualifiedIdentifier, Property
 from sila2.framework.errors.undefined_execution_error import UndefinedExecutionError
 from sila2.framework.errors.validation_error import ValidationError
+from sila2.server import MetadataDict, SilaServer
 
 from sila_cetoni.application.system import ApplicationSystem
 
@@ -47,9 +48,13 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
     __stop_event: Event
 
     def __init__(
-        self, executor: Executor, valve: Optional[Valve] = None, gateway: Optional[ValveGatewayServiceImpl] = None
+        self,
+        server: SilaServer,
+        executor: Executor,
+        valve: Optional[Valve] = None,
+        gateway: Optional[ValveGatewayServiceImpl] = None,
     ):
-        super().__init__()
+        super().__init__(server)
         self.__valve = valve
         self.__valve_gateway = gateway
         self.__system = ApplicationSystem()
@@ -89,15 +94,15 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
         return update_position
 
-    def get_NumberOfPositions(self, *, metadata: Dict[FullyQualifiedIdentifier, Any]) -> int:
+    def get_NumberOfPositions(self, *, metadata: MetadataDict) -> int:
         valve = self.__valve or self.__valve_gateway.get_valve(metadata)
         return valve.number_of_valve_positions()
 
-    def Position_on_subscription(self, *, metadata: Dict[FullyQualifiedIdentifier, Any]) -> Optional[Queue[int]]:
+    def Position_on_subscription(self, *, metadata: MetadataDict) -> Optional[Queue[int]]:
         if self.__valve_gateway is None:
             return super().Position_on_subscription(metadata=metadata)
 
-        valve_index: int = metadata.pop(self.__valve_gateway.valve_index_identifier)
+        valve_index: int = metadata[self.__valve_gateway.valve_index_metadata]
         try:
             return self.__position_queues[valve_index]
         except IndexError:
@@ -114,9 +119,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
                 raise ValvePositionNotAvailable()
             raise err
 
-    def SwitchToPosition(
-        self, Position: int, *, metadata: Dict[FullyQualifiedIdentifier, Any]
-    ) -> SwitchToPosition_Responses:
+    def SwitchToPosition(self, Position: int, *, metadata: MetadataDict) -> SwitchToPosition_Responses:
         if not self.__system.state.is_operational():
             raise SystemNotOperationalError(ValvePositionControllerFeature["SwitchToPosition"])
 
@@ -130,7 +133,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
         self._try_switch_valve_to_position(valve, Position)
 
-    def TogglePosition(self, *, metadata: Dict[FullyQualifiedIdentifier, Any]) -> TogglePosition_Responses:
+    def TogglePosition(self, *, metadata: MetadataDict) -> TogglePosition_Responses:
         if not self.__system.state.is_operational():
             raise SystemNotOperationalError(ValvePositionControllerFeature["TogglePosition"])
 

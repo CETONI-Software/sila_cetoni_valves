@@ -5,8 +5,9 @@ from queue import Queue
 from typing import Any, Dict, List, Union
 
 from qmixsdk.qmixvalve import Valve
-from sila2.framework import Command, Feature, FullyQualifiedIdentifier, Property
+from sila2.framework import Command, Feature, FullyQualifiedIdentifier, Metadata, Property
 from sila2.framework.errors.framework_error import FrameworkError, FrameworkErrorType
+from sila2.server import MetadataDict, SilaServer
 
 from ..generated.valvegatewayservice import InvalidValveIndex, ValveGatewayServiceBase, ValveGatewayServiceFeature
 from ..generated.valvepositioncontroller import ValvePositionControllerFeature
@@ -16,20 +17,20 @@ logger = logging.getLogger(__name__)
 
 class ValveGatewayServiceImpl(ValveGatewayServiceBase):
     __valves: List[Valve]
-    __valve_index_identifier: FullyQualifiedIdentifier
+    __valve_index_metadata: Metadata
 
-    def __init__(self, valves: List[Valve]) -> None:
-        super().__init__()
+    def __init__(self, server: SilaServer, valves: List[Valve]) -> None:
+        super().__init__(server)
         self.__valves = valves
-        self.__valve_index_identifier = ValveGatewayServiceFeature["ValveIndex"].fully_qualified_identifier
+        self.__valve_index_metadata = ValveGatewayServiceFeature["ValveIndex"]
 
-    def get_NumberOfValves(self, *, metadata: Dict[FullyQualifiedIdentifier, Any]) -> int:
+    def get_NumberOfValves(self, *, metadata: MetadataDict) -> int:
         return len(self.__valves)
 
     def get_calls_affected_by_ValveIndex(self) -> List[Union[Feature, Command, Property, FullyQualifiedIdentifier]]:
         return [ValvePositionControllerFeature]
 
-    def get_valve(self, metadata: Dict[FullyQualifiedIdentifier, Any]) -> Valve:
+    def get_valve(self, metadata: MetadataDict) -> Valve:
         """
         Get the valve that is identified by the valve index given in `metadata`
 
@@ -37,7 +38,7 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
         :return: A valid `Valve` object if the valve can be identified, otherwise a FrameworkError will be raised
         """
 
-        valve_index: int = metadata.pop(self.__valve_index_identifier)
+        valve_index: int = metadata[self.__valve_index_metadata]
         logger.debug(f"Requested valve: {valve_index}")
 
         try:
@@ -54,5 +55,5 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
         return self.__valves
 
     @property
-    def valve_index_identifier(self) -> FullyQualifiedIdentifier:
-        return self.__valve_index_identifier
+    def valve_index_metadata(self) -> Metadata:
+        return self.__valve_index_metadata

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "SiLAFramework.proto";
+
+package sila2.de.cetoni.valves.valvegatewayservice.v1;
+
+/* Provides means to access individual valves of a valve terminal */
+service ValveGatewayService {
+  /* The number of valves of a terminal */
+  rpc Get_NumberOfValves (sila2.de.cetoni.valves.valvegatewayservice.v1.Get_NumberOfValves_Parameters) returns (sila2.de.cetoni.valves.valvegatewayservice.v1.Get_NumberOfValves_Responses) {}
+  /* Get fully qualified identifiers of all features, commands and properties affected by ValveIndex */
+  rpc Get_FCPAffectedByMetadata_ValveIndex (sila2.de.cetoni.valves.valvegatewayservice.v1.Get_FCPAffectedByMetadata_ValveIndex_Parameters) returns (sila2.de.cetoni.valves.valvegatewayservice.v1.Get_FCPAffectedByMetadata_ValveIndex_Responses) {}
+}
+
+/* Parameters for NumberOfValves */
+message Get_NumberOfValves_Parameters {
+}
+
+/* Responses of NumberOfValves */
+message Get_NumberOfValves_Responses {
+  sila2.org.silastandard.Integer NumberOfValves = 1;  /* The number of valves of a terminal */
+}
+
+/* Parameters for Get_FCPAffectedByMetadata_ValveIndex */
+message Get_FCPAffectedByMetadata_ValveIndex_Parameters {
+}
+
+/* Responses of Get_FCPAffectedByMetadata_ValveIndex */
+message Get_FCPAffectedByMetadata_ValveIndex_Responses {
+  repeated sila2.org.silastandard.String AffectedCalls = 1;  /* Fully qualified identifiers of all features, commands and properties affected by ValveIndex */
+}
+
+/* The index of a single valve of a valve terminal. This value is 0-indexed, i.e. the first valve has index 0, the second one index 1 and so on. */
+message Metadata_ValveIndex {
+  sila2.org.silastandard.Integer ValveIndex = 1;  /* The index of a single valve of a valve terminal. This value is 0-indexed, i.e. the first valve has index 0, the second one index 1 and so on. */
+}
