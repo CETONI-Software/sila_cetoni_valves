@@ -11,7 +11,7 @@ from .generated.valvegatewayservice import ValveGatewayServiceFeature
 from .generated.valvepositioncontroller import ValvePositionControllerFeature
 
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
 class Server(CoreServer):
