@@ -11,6 +11,9 @@ from .generated.valvegatewayservice import ValveGatewayServiceFeature
 from .generated.valvepositioncontroller import ValvePositionControllerFeature
 
 
+__version__ = "1.0.0"
+
+
 class Server(CoreServer):
     def __init__(
         self,
@@ -26,7 +29,7 @@ class Server(CoreServer):
             server_name=server_name or "Valve Service",
             server_type=server_type or "TestServer",
             server_description=server_description or "The SiLA 2 driver for CETONI valve modules",
-            server_version=server_version or "0.1.0",
+            server_version=server_version or __version__,
             server_vendor_url=server_vendor_url or "https://www.cetoni.com",
             server_uuid=server_uuid,
         )
