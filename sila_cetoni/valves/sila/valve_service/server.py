@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -9,7 +11,6 @@ from .feature_implementations.valvegatewayservice_impl import ValveGatewayServic
 from .feature_implementations.valvepositioncontroller_impl import ValvePositionControllerImpl
 from .generated.valvegatewayservice import ValveGatewayServiceFeature
 from .generated.valvepositioncontroller import ValvePositionControllerFeature
-
 
 __version__ = "1.1.0"
 
