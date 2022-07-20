@@ -65,7 +65,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
             try:
                 self.update_Position(self.__valve.actual_valve_position())
             except DeviceError as err:
-                logger.error(err)
+                logger.error(err, exc_info=err)
 
             executor.submit(self.__make_position_updater(), self.__stop_event)
         else:
