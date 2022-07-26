@@ -144,4 +144,5 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
         self._try_switch_valve_to_position(valve, (valve.actual_valve_position() + 1) % 2)
 
     def stop(self) -> None:
+        super().stop()
         self.__stop_event.set()
