@@ -125,11 +125,14 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
         valve = self.__valve or self.__valve_gateway.get_valve(metadata)
         if 0 > Position or Position >= valve.number_of_valve_positions():
-            raise ValidationError(
-                ValvePositionControllerFeature["SwitchToPosition"].parameters.fields[0],
+            err = ValidationError(
                 f"The given position ({Position}) is not in the range for this valve. "
-                f"Adjust the valve position to fit in the range between 0 and {valve.number_of_valve_positions() - 1}!",
+                f"Adjust the valve position to fit in the range between 0 and {valve.number_of_valve_positions() - 1}!"
             )
+            err.parameter_fully_qualified_identifier = (
+                ValvePositionControllerFeature["SwitchToPosition"].parameters.fields[0].fully_qualified_identifier
+            )
+            raise err
 
         self._try_switch_valve_to_position(valve, Position)
 
