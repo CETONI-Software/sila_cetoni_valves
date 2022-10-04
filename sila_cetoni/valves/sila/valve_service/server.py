@@ -12,7 +12,7 @@ from .feature_implementations.valvepositioncontroller_impl import ValvePositionC
 from .generated.valvegatewayservice import ValveGatewayServiceFeature
 from .generated.valvepositioncontroller import ValvePositionControllerFeature
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 
 class Server(CoreServer):
