@@ -12,7 +12,7 @@ from qmixsdk.qmixvalve import Valve
 from sila2.framework.errors.validation_error import ValidationError
 from sila2.server import MetadataDict, SilaServer
 
-from sila_cetoni.application.system import ApplicationSystem
+from sila_cetoni.application.system import ApplicationSystem, CetoniApplicationSystem
 
 from ..generated.valvegatewayservice import InvalidValveIndex
 from ..generated.valvepositioncontroller import (
@@ -28,6 +28,7 @@ from .valvegatewayservice_impl import ValveGatewayServiceImpl
 logger = logging.getLogger(__name__)
 
 
+@CetoniApplicationSystem.monitor_traffic
 class ValvePositionControllerImpl(ValvePositionControllerBase):
     __valve: Optional[Valve]
     __valve_gateway: Optional[ValveGatewayServiceImpl]
