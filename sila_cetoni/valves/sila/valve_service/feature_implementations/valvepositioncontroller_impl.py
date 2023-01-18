@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from concurrent.futures import Executor
 from queue import Queue
 from threading import Event
@@ -73,13 +72,12 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
         def update_position(stop_event: Event):
             valve = self.__valve or self.__valve_gateway.valves[i]
             new_position = position = valve.actual_valve_position()
-            while not stop_event.is_set():
+            while not stop_event.wait(0.1):
                 if self.__system.state.is_operational():
                     new_position = valve.actual_valve_position()
                 if new_position != position:
                     position = new_position
                     self.update_Position(position, queue=None if i is None else self.__position_queues[i])
-                time.sleep(0.1)
 
         return update_position
 
