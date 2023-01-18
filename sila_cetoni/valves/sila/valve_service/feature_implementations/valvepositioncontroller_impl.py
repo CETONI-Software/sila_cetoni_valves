@@ -12,7 +12,7 @@ from qmixsdk.qmixvalve import Valve
 from sila2.framework.errors.validation_error import ValidationError
 from sila2.server import MetadataDict, SilaServer
 
-from sila_cetoni.application.system import ApplicationSystem, requires_operational_system
+from sila_cetoni.application.system import ApplicationSystem
 
 from ..generated.valvegatewayservice import InvalidValveIndex
 from ..generated.valvepositioncontroller import (
@@ -26,7 +26,6 @@ from ..generated.valvepositioncontroller import (
 from .valvegatewayservice_impl import ValveGatewayServiceImpl
 
 logger = logging.getLogger(__name__)
-
 
 
 class ValvePositionControllerImpl(ValvePositionControllerBase):
@@ -108,7 +107,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
                 raise ValvePositionNotAvailable()
             raise err
 
-    @requires_operational_system(ValvePositionControllerFeature)
+    @ApplicationSystem.ensure_operational(ValvePositionControllerFeature)
     def SwitchToPosition(self, Position: int, *, metadata: MetadataDict) -> SwitchToPosition_Responses:
         valve = self.__valve or self.__valve_gateway.get_valve(metadata)
         if 0 > Position or Position >= valve.number_of_valve_positions():
@@ -123,7 +122,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
         self._try_switch_valve_to_position(valve, Position)
 
-    @requires_operational_system(ValvePositionControllerFeature)
+    @ApplicationSystem.ensure_operational(ValvePositionControllerFeature)
     def TogglePosition(self, *, metadata: MetadataDict) -> TogglePosition_Responses:
         valve = self.__valve or self.__valve_gateway.get_valve(metadata)
         if valve.number_of_valve_positions() > 2:
