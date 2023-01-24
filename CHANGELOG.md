@@ -18,6 +18,11 @@ Types of changes
 
 ## Unreleased
 
+### Changed
+
+- `ApplicationSystem.ensure_operational` is now used instead of manually checking the `ApplicationSystem`'s state
+- ValvePositionController is now monitored for traffic by `CetoniApplicationSystem`
+
 ## v1.8.0
 
 Sync with sila_cetoni v1.8.0 release
