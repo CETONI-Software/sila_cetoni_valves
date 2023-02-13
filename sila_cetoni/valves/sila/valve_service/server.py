@@ -12,8 +12,6 @@ from .feature_implementations.valvepositioncontroller_impl import ValvePositionC
 from .generated.valvegatewayservice import ValveGatewayServiceFeature
 from .generated.valvepositioncontroller import ValvePositionControllerFeature
 
-__version__ = "1.8.0"
-
 
 class Server(CoreServer):
     def __init__(
@@ -26,6 +24,8 @@ class Server(CoreServer):
         server_vendor_url: str = "",
         server_uuid: Optional[Union[str, UUID]] = None,
     ):
+        from ... import __version__
+
         super().__init__(
             server_name=server_name or "Valve Service",
             server_type=server_type or "TestServer",
