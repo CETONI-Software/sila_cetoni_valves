@@ -29,8 +29,8 @@ dev = [
     "isort",
 ]
 
-[project.scripts]
-sila-cetoni = "sila_cetoni.valves:main"
+# [project.scripts]
+# sila-cetoni = "sila_cetoni.valves:main"
 
 [project.urls]
 "Homepage" = "https://cetoni.de/cobomation/#sila"
