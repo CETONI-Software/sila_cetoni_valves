@@ -18,6 +18,10 @@ Types of changes
 
 ## Unreleased
 
+## v1.9.0
+
+Sync with sila_cetoni v1.9.0 release
+
 ### Changed
 
 - `ApplicationSystem.ensure_operational` is now used instead of manually checking the `ApplicationSystem`'s state
