@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import logging
-from concurrent.futures import Executor
+from functools import partial
 from queue import Queue
-from threading import Event
 from typing import List, Optional
 
 from qmixsdk.qmixbus import DeviceError
@@ -12,6 +11,7 @@ from sila2.framework.errors.validation_error import ValidationError
 from sila2.server import MetadataDict, SilaServer
 
 from sila_cetoni.application.system import ApplicationSystem, CetoniApplicationSystem
+from sila_cetoni.utils import PropertyUpdater, not_equal
 
 from ..generated.valvegatewayservice import InvalidValveIndex
 from ..generated.valvepositioncontroller import (
@@ -33,12 +33,10 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
     __valve_gateway: Optional[ValveGatewayServiceImpl]
     __position_queues: List[Queue[int]]  # same number of items and order as `__valve_gateway.valves`
     __system: ApplicationSystem
-    __stop_event: Event
 
     def __init__(
         self,
         server: SilaServer,
-        executor: Executor,
         valve: Optional[Valve] = None,
         gateway: Optional[ValveGatewayServiceImpl] = None,
     ):
@@ -46,40 +44,30 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
         self.__valve = valve
         self.__valve_gateway = gateway
         self.__system = ApplicationSystem()
-        self.__stop_event = Event()
 
-        if self.__valve:
-            # initial value
-            try:
-                self.update_Position(self.__valve.actual_valve_position())
-            except DeviceError as err:
-                logger.error(err, exc_info=err)
-
-            executor.submit(self.__make_position_updater(), self.__stop_event)
-        else:
+        if self.__valve is not None:
+            self.run_periodically(
+                PropertyUpdater(
+                    self.__valve.actual_valve_position,
+                    not_equal,
+                    self.update_Position,
+                    when=self.__system.state.is_operational,
+                )
+            )
+        elif self.__valve_gateway is not None:
             self.__position_queues = []
             for i in range(len(self.__valve_gateway.valves)):
-                self.__position_queues += [Queue()]
+                queue = Queue()
+                self.__position_queues += [queue]
 
-                # initial value
-                self.update_Position(
-                    self.__valve_gateway.valves[i].actual_valve_position(), queue=self.__position_queues[i]
+                self.run_periodically(
+                    PropertyUpdater(
+                        lambda: self.__valve_gateway.valves[i].actual_valve_position(),
+                        not_equal,
+                        partial(self.update_Position, queue=queue),
+                        when=self.__system.state.is_operational,
+                    )
                 )
-
-                executor.submit(self.__make_position_updater(i), self.__stop_event)
-
-    def __make_position_updater(self, i: Optional[int] = None):
-        def update_position(stop_event: Event):
-            valve = self.__valve or self.__valve_gateway.valves[i]
-            new_position = position = valve.actual_valve_position()
-            while not stop_event.wait(0.1):
-                if self.__system.state.is_operational():
-                    new_position = valve.actual_valve_position()
-                if new_position != position:
-                    position = new_position
-                    self.update_Position(position, queue=None if i is None else self.__position_queues[i])
-
-        return update_position
 
     def get_NumberOfPositions(self, *, metadata: MetadataDict) -> int:
         valve = self.__valve or self.__valve_gateway.get_valve(metadata)
@@ -128,7 +116,3 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
             raise ValveNotToggleable()
 
         self._try_switch_valve_to_position(valve, (valve.actual_valve_position() + 1) % 2)
-
-    def stop(self) -> None:
-        super().stop()
-        self.__stop_event.set()

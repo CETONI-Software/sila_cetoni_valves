@@ -36,14 +36,10 @@ class Server(CoreServer):
         )
         if len(valves) == 1:
             # a single valve can be controlled directly without the gateway
-            self.valvepositioncontroller = ValvePositionControllerImpl(
-                self, valve=valves[0], executor=self.child_task_executor
-            )
+            self.valvepositioncontroller = ValvePositionControllerImpl(self, valve=valves[0])
             self.set_feature_implementation(ValvePositionControllerFeature, self.valvepositioncontroller)
         else:
             self.valvegatewayservice = ValveGatewayServiceImpl(self, valves)
-            self.valvepositioncontroller = ValvePositionControllerImpl(
-                self, gateway=self.valvegatewayservice, executor=self.child_task_executor
-            )
+            self.valvepositioncontroller = ValvePositionControllerImpl(self, gateway=self.valvegatewayservice)
             self.set_feature_implementation(ValveGatewayServiceFeature, self.valvegatewayservice)
             self.set_feature_implementation(ValvePositionControllerFeature, self.valvepositioncontroller)
