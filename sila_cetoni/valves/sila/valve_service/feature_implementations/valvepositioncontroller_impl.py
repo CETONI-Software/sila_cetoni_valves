@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 from functools import partial
 from queue import Queue
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from qmixsdk.qmixbus import DeviceError
 from qmixsdk.qmixvalve import Valve
+from sila2.framework import Command
 from sila2.framework.errors.validation_error import ValidationError
 from sila2.server import MetadataDict, SilaServer
 
@@ -43,7 +44,7 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
         super().__init__(server)
         self.__valve = valve
         self.__valve_gateway = gateway
-        self.__system = ApplicationSystem()
+        self.__system = ApplicationSystem()  # type: ignore
 
         if self.__valve is not None:
             self.run_periodically(
@@ -62,16 +63,24 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
                 self.run_periodically(
                     PropertyUpdater(
-                        lambda: self.__valve_gateway.valves[i].actual_valve_position(),
+                        lambda: self.__valve_gateway.valves[i].actual_valve_position(),  # type: ignore
                         not_equal,
                         partial(self.update_Position, queue=queue),
                         when=self.__system.state.is_operational,
                     )
                 )
 
+    def __get_valve(self, metadata: MetadataDict) -> Valve:
+        if self.__valve is not None:
+            return self.__valve
+
+        if self.__valve_gateway is not None:
+            return self.__valve_gateway.get_valve(metadata)
+
+        raise ValueError("No valve or valve gateway is set. Cannot determine the valve.")
+
     def get_NumberOfPositions(self, *, metadata: MetadataDict) -> int:
-        valve = self.__valve or self.__valve_gateway.get_valve(metadata)
-        return valve.number_of_valve_positions()
+        return self.__get_valve(metadata).number_of_valve_positions()
 
     def Position_on_subscription(self, *, metadata: MetadataDict) -> Optional[Queue[int]]:
         if self.__valve_gateway is None:
@@ -96,23 +105,27 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
 
     @ApplicationSystem.ensure_operational(ValvePositionControllerFeature)
     def SwitchToPosition(self, Position: int, *, metadata: MetadataDict) -> SwitchToPosition_Responses:
-        valve = self.__valve or self.__valve_gateway.get_valve(metadata)
+        valve = self.__get_valve(metadata)
         if 0 > Position or Position >= valve.number_of_valve_positions():
             err = ValidationError(
                 f"The given position ({Position}) is not in the range for this valve. "
                 f"Adjust the valve position to fit in the range between 0 and {valve.number_of_valve_positions() - 1}!"
             )
             err.parameter_fully_qualified_identifier = (
-                ValvePositionControllerFeature["SwitchToPosition"].parameters.fields[0].fully_qualified_identifier
+                cast(Command, ValvePositionControllerFeature["SwitchToPosition"])
+                .parameters.fields[0]
+                .fully_qualified_identifier
             )
             raise err
 
         self._try_switch_valve_to_position(valve, Position)
+        return SwitchToPosition_Responses()
 
     @ApplicationSystem.ensure_operational(ValvePositionControllerFeature)
     def TogglePosition(self, *, metadata: MetadataDict) -> TogglePosition_Responses:
-        valve = self.__valve or self.__valve_gateway.get_valve(metadata)
+        valve = self.__get_valve(metadata)
         if valve.number_of_valve_positions() > 2:
             raise ValveNotToggleable()
 
         self._try_switch_valve_to_position(valve, (valve.actual_valve_position() + 1) % 2)
+        return TogglePosition_Responses()

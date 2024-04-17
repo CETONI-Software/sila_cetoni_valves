@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import logging
-from queue import Queue
-from typing import Any, Dict, List, Union
+from typing import List, Union, cast
 
 from qmixsdk.qmixvalve import Valve
 from sila2.framework import Command, Feature, FullyQualifiedIdentifier, Metadata, Property
-from sila2.framework.errors.framework_error import FrameworkError, FrameworkErrorType
 from sila2.server import MetadataDict, SilaServer
 
 from ..generated.valvegatewayservice import InvalidValveIndex, ValveGatewayServiceBase, ValveGatewayServiceFeature
@@ -17,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 class ValveGatewayServiceImpl(ValveGatewayServiceBase):
     __valves: List[Valve]
-    __valve_index_metadata: Metadata
+    __valve_index_metadata: Metadata[int]
 
     def __init__(self, server: SilaServer, valves: List[Valve]) -> None:
         super().__init__(server)
         self.__valves = valves
-        self.__valve_index_metadata = ValveGatewayServiceFeature["ValveIndex"]
+        self.__valve_index_metadata = cast(Metadata[int], ValveGatewayServiceFeature["ValveIndex"])
 
     def get_NumberOfValves(self, *, metadata: MetadataDict) -> int:
         return len(self.__valves)
@@ -34,8 +32,20 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
         """
         Get the valve that is identified by the valve index given in `metadata`
 
-        :param metdata: The metadata of the call. It should contain the requested valve index
-        :return: A valid `Valve` object if the valve can be identified, otherwise a FrameworkError will be raised
+        Parameters
+        ----------
+        metadata : MetadataDict
+            The metadata of the call. It should contain the requested valve index
+
+        Returns
+        -------
+        Valve
+            A valid `Valve` object if the valve can be identified
+
+        Raises
+        ------
+        FrameworkError
+            If the valve index is invalid
         """
 
         valve_index: int = metadata[self.__valve_index_metadata]
@@ -47,7 +57,10 @@ class ValveGatewayServiceImpl(ValveGatewayServiceBase):
             return self.__valves[valve_index]
         except IndexError:
             raise InvalidValveIndex(
-                message=f"The sent Valve Index ({valve_index}) is invalid! The index has to be between 0 and {len(self.__valves) - 1}."
+                message=(
+                    f"The sent Valve Index ({valve_index}) is invalid! The index has to be between 0 and "
+                    f"{len(self.__valves) - 1}."
+                )
             )
 
     @property
