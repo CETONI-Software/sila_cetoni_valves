@@ -47,14 +47,18 @@ class ValvePositionControllerImpl(ValvePositionControllerBase):
         self.__system = ApplicationSystem()  # type: ignore
 
         if self.__valve is not None:
-            self.run_periodically(
-                PropertyUpdater(
-                    self.__valve.actual_valve_position,
-                    not_equal,
-                    self.update_Position,
-                    when=self.__system.state.is_operational,
+            try:
+                self.__valve.actual_valve_position()
+                self.run_periodically(
+                    PropertyUpdater(
+                        self.__valve.actual_valve_position,
+                        not_equal,
+                        self.update_Position,
+                        when=self.__system.state.is_operational,
+                    )
                 )
-            )
+            except DeviceError as err:
+                logger.error(f"Error reading valve position for valve {self.__valve.get_device_name()}: {err}")
         elif self.__valve_gateway is not None:
             self.__position_queues = []
             for i in range(len(self.__valve_gateway.valves)):

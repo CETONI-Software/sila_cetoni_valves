@@ -22,6 +22,10 @@ Types of changes
 
 - All feature implementations use `PropertyUpdater` now
 
+### Fixed
+
+- Fix potential error when reading the valve position using CETONI SDK raises a `DeviceError`
+
 ## v1.9.1
 
 Sync with sila_cetoni v1.9.1 release
